@@ -1,12 +1,12 @@
 package com.beyond.basic.b2_board.author.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter @ToString
+//빌더패턴은 AllArgs생성자 기반으로 동작
+@Builder
 public class Author {
     private Long id;
     private String name;
