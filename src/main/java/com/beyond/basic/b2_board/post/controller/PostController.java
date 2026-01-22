@@ -2,7 +2,7 @@ package com.beyond.basic.b2_board.post.controller;
 
 import com.beyond.basic.b2_board.post.dtos.PostDetailDto;
 import com.beyond.basic.b2_board.post.dtos.PostListDto;
-import com.beyond.basic.b2_board.post.dtos.PostPostingDto;
+import com.beyond.basic.b2_board.post.dtos.PostCreateDto;
 import com.beyond.basic.b2_board.post.service.PostService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +21,9 @@ public class PostController {
         this.postService = postService;
     }
     @PostMapping("/post/create")
-    public ResponseEntity<?> create(@RequestBody @Valid PostPostingDto dto){
+    @ResponseStatus(HttpStatus.CREATED)
+    public void create(@RequestBody PostCreateDto dto){
         postService.save(dto);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body("OK");
     }
     @GetMapping("/posts")
     public List<PostListDto> findAll(){
@@ -42,6 +40,7 @@ public class PostController {
     }
     @DeleteMapping("/post/{id}")
     public void deletePost(@PathVariable Long id){
+
         postService.deletePost(id);
     }
 }

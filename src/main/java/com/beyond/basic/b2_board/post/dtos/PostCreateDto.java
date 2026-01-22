@@ -1,5 +1,6 @@
 package com.beyond.basic.b2_board.post.dtos;
 
+import com.beyond.basic.b2_board.author.domain.Author;
 import com.beyond.basic.b2_board.post.domain.Post;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -9,24 +10,21 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class PostPostingDto {
+public class PostCreateDto {
 
-    @NotBlank
     private String title;
-    @NotBlank
     private String contents;
-    @NotBlank
     private String category;
-    @NotBlank
     private String authorEmail;
 
-    public Post toEntity(){
+    public Post toEntity(Author author){
         return Post.builder()
-                .title(this.title)
-                .contents(this.contents)
-                .category(this.category)
-                .authorEmail(this.authorEmail)
-                .delYn("N")
+                .title(this.getTitle())
+                .contents(this.getContents())
+                .category(this.getCategory())
+                .author(author)
+//                .delYn("N")
                 .build();
     }
+
 }

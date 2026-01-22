@@ -11,6 +11,8 @@ import com.beyond.basic.b2_board.dtos.AuthorDetailDto;
 import com.beyond.basic.b2_board.dtos.AuthorListDto;
 
 import com.beyond.basic.b2_board.dtos.AuthorUpdatePwDto;
+import com.beyond.basic.b2_board.post.domain.Post;
+import com.beyond.basic.b2_board.post.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,10 +41,12 @@ public class AuthorService {
 //    장점2) 다형성 구현가능 (interface사용가능)
 //    장점3) 순환참조방지(컴파일타임에 에러check)
     private final AuthorRepository authorRepository;
+    private final PostRepository postRepository;
 //    생성자가 하나밖에 없을 때에는 Autowired 생략 가능.
     @Autowired
-    public AuthorService(AuthorRepository authorRepository) {
+    public AuthorService(AuthorRepository authorRepository,PostRepository postRepository) {
         this.authorRepository = authorRepository;
+        this.postRepository = postRepository;
     }
 
 //    의존성주입(DI)방법3. RequiredArgsConstructor 어노테이션 사용
@@ -69,7 +73,20 @@ public class AuthorService {
             throw new IllegalArgumentException("email이 이미 존재합니다");
         }
         Author author = dto.toEntity();
-        authorRepository.save(author);
+//        casecade persist를 활용한 예시
+        Author authorDb = authorRepository.save(author);
+        author.getPostList().add(Post.builder()
+                .title("안녕하세요")
+                .author(authorDb)
+                .build());
+
+
+
+//        cascade 옵션이 아닌 예시
+//        postRepository.save(Post.builder()
+//                        .title("안녕하세요")
+//                        .author(authorDb)
+//                        .build());
 //        예외발생시 transactional 어노테이션에 의해 rollback 처리
 //        authorRepository.findById(10L).orElseThrow(()-> new NoSuchElementException("entity is not found"));
 
@@ -79,8 +96,11 @@ public class AuthorService {
     public AuthorDetailDto findById(Long id){
         Optional<Author> optAuthor = authorRepository.findById(id);
         Author author = optAuthor.orElseThrow(()-> new EntityNotFoundException("entity is not found"));
+        List<Post> postList = postRepository.findAllByAuthorIdAndDelYn(author.getId(),"N");
+
 //        dto조립
 //        fromEntity는 아직 dto객체가 만들어지지 않은 상태이므로 static메서드로 설계
+//        AuthorDetailDto dto = AuthorDetailDto.fromEntity(author,0);
         AuthorDetailDto dto = AuthorDetailDto.fromEntity(author);
         return dto;
 

@@ -15,6 +15,8 @@ public class AuthorDetailDto {
     private String name;
     private String email;
     private String password;
+    private int postCount;
+
 
     public static AuthorDetailDto fromEntity(Author author){
         return AuthorDetailDto.builder()
@@ -22,6 +24,7 @@ public class AuthorDetailDto {
                 .name(author.getName())
                 .email(author.getEmail())
                 .password(author.getPassword())
+                .postCount(author.getPostList().size())
                 .build();
     }
 }

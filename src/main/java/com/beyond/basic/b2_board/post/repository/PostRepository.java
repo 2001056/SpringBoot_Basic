@@ -12,4 +12,6 @@ import java.util.Optional;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByDelYn(String delYn);
+
+    List<Post> findAllByAuthorIdAndDelYn(Long authorId,String DelYn);
 }
