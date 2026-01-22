@@ -6,6 +6,7 @@ import com.beyond.basic.b2_board.common.CommonErrorDto;
 import com.beyond.basic.b2_board.dtos.AuthorCreateDto;
 import com.beyond.basic.b2_board.dtos.AuthorDetailDto;
 import com.beyond.basic.b2_board.dtos.AuthorListDto;
+import com.beyond.basic.b2_board.dtos.AuthorUpdatePwDto;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -97,5 +98,9 @@ public class AuthorController {
     public String delete(@PathVariable Long id){
         authorService.delete(id);
         return null;
+    }
+    @PatchMapping("/update/password")
+    public void updatePw(@RequestBody AuthorUpdatePwDto dto){
+        authorService.updatePw(dto);
     }
 }

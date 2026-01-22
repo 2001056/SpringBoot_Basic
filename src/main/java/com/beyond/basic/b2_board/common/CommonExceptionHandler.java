@@ -44,6 +44,7 @@ public class CommonExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> exception(Exception e){
+        System.out.println("heeer3");
         e.printStackTrace();
         CommonErrorDto dto = CommonErrorDto.builder()
                 .status_code(500)
