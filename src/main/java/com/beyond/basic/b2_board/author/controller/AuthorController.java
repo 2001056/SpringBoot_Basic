@@ -1,19 +1,17 @@
 package com.beyond.basic.b2_board.author.controller;
 
 
+import com.beyond.basic.b2_board.author.domain.Author;
 import com.beyond.basic.b2_board.author.service.AuthorService;
-import com.beyond.basic.b2_board.common.CommonErrorDto;
-import com.beyond.basic.b2_board.dtos.AuthorCreateDto;
-import com.beyond.basic.b2_board.dtos.AuthorDetailDto;
-import com.beyond.basic.b2_board.dtos.AuthorListDto;
-import com.beyond.basic.b2_board.dtos.AuthorUpdatePwDto;
+import com.beyond.basic.b2_board.common.auth.JwtTokenProvider;
+import com.beyond.basic.b2_board.common.dtos.CommonErrorDto;
+import com.beyond.basic.b2_board.dtos.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -22,16 +20,19 @@ import java.util.NoSuchElementException;
 @RequestMapping("/author")
 public class AuthorController {
     private final AuthorService authorService;
-    @Autowired
-    public AuthorController(AuthorService authorService) {
-        this.authorService = authorService;
-    }
+    private final JwtTokenProvider jwtTokenProvider;
 
+
+    @Autowired
+    public AuthorController(AuthorService authorService, JwtTokenProvider jwtTokenProvider) {
+        this.authorService = authorService;
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
 
 
     @PostMapping("/create")
 //    dto에 있는 validation어노테이션과 @Valid가 한쌍
-    public ResponseEntity<?> create(@RequestBody @Valid AuthorCreateDto dto){
+    public ResponseEntity<?> create(@RequestBody @Valid AuthorCreateDto dto) {
 //        아래 예외처리는 exceptionhandler에서 전역적으로 예외처리
 //        try {
 //            authorService.save(dto);
@@ -56,13 +57,14 @@ public class AuthorController {
     }
 
     @GetMapping("/list")
-    public List<AuthorListDto> findAll(){
+    public List<AuthorListDto> findAll() {
         List<AuthorListDto> dtoList = authorService.findAll();
         return dtoList;
 
 
     }
-//    아래와 같이 http응답 body를 분기처리 한다하더라도 상태코드는 200으로 고정
+
+    //    아래와 같이 http응답 body를 분기처리 한다하더라도 상태코드는 200으로 고정
 //    @GetMapping("/{id}")
 //    public Object findById(@PathVariable Long id){
 //        try {
@@ -77,13 +79,13 @@ public class AuthorController {
 //        }
 //    }
     @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable Long id){
+    public ResponseEntity<?> findById(@PathVariable Long id) {
         try {
             AuthorDetailDto dto = authorService.findById(id);
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(dto);
-        }catch (NoSuchElementException e){
+        } catch (NoSuchElementException e) {
             e.printStackTrace();
             CommonErrorDto dto = CommonErrorDto.builder()
                     .status_code(404)
@@ -94,13 +96,24 @@ public class AuthorController {
                     .body(dto);
         }
     }
+
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id){
+    public String delete(@PathVariable Long id) {
         authorService.delete(id);
         return null;
     }
+
     @PatchMapping("/update/password")
-    public void updatePw(@RequestBody AuthorUpdatePwDto dto){
+    public void updatePw(@RequestBody AuthorUpdatePwDto dto) {
         authorService.updatePw(dto);
     }
+
+    @PostMapping("/login")
+    public String login(@RequestBody AuthorLoginDto dto) {
+        Author author = authorService.login(dto);
+//        토큰 생성 및 리턴
+        String token = jwtTokenProvider.createToken(author);
+        return token;
+    }
 }
+

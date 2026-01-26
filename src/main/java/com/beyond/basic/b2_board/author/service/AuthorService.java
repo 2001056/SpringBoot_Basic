@@ -6,15 +6,13 @@ import com.beyond.basic.b2_board.author.repository.AuthorJdbcRepository;
 import com.beyond.basic.b2_board.author.repository.AuthorJpaRepository;
 import com.beyond.basic.b2_board.author.repository.AuthorMybatisRepository;
 import com.beyond.basic.b2_board.author.repository.AuthorRepository;
-import com.beyond.basic.b2_board.dtos.AuthorCreateDto;
-import com.beyond.basic.b2_board.dtos.AuthorDetailDto;
-import com.beyond.basic.b2_board.dtos.AuthorListDto;
+import com.beyond.basic.b2_board.dtos.*;
 
-import com.beyond.basic.b2_board.dtos.AuthorUpdatePwDto;
 import com.beyond.basic.b2_board.post.domain.Post;
 import com.beyond.basic.b2_board.post.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,11 +40,13 @@ public class AuthorService {
 //    장점3) 순환참조방지(컴파일타임에 에러check)
     private final AuthorRepository authorRepository;
     private final PostRepository postRepository;
+    private final PasswordEncoder passwordEncoder;
 //    생성자가 하나밖에 없을 때에는 Autowired 생략 가능.
     @Autowired
-    public AuthorService(AuthorRepository authorRepository,PostRepository postRepository) {
+    public AuthorService(AuthorRepository authorRepository, PostRepository postRepository, PasswordEncoder passwordEncoder) {
         this.authorRepository = authorRepository;
         this.postRepository = postRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
 //    의존성주입(DI)방법3. RequiredArgsConstructor 어노테이션 사용
@@ -66,14 +66,21 @@ public class AuthorService {
 //                .build();
 //        방법2. toEntity, from Entity 패턴을  통한 객체 조립
 //        객체조립이라는 반복적인 작업을 별도의 코드로 떼어내 공통화
-
+//
 //        이메일 중복여부 검증
 
         if(authorRepository.findByEmail(dto.getEmail()).isPresent()){
             throw new IllegalArgumentException("email이 이미 존재합니다");
         }
-        Author author = dto.toEntity();
+
+        Author author = dto.toEntity(passwordEncoder.encode(dto.getPassword()));
+//        author.getPostList().add(Post.builder()
+//                .title("안녕하세요")
+//                .author(author)
+//                .build());
 //        casecade persist를 활용한 예시
+//        authorRepository.save(author);
+
         Author authorDb = authorRepository.save(author);
         author.getPostList().add(Post.builder()
                 .title("안녕하세요")
@@ -127,6 +134,23 @@ public class AuthorService {
         Author author = authorRepository.findById(id).orElseThrow(()->new NoSuchElementException("entity is not found"));
 //        삭제작업
         authorRepository.delete(author);
+    }
+    public Author login(AuthorLoginDto dto){
+        Optional<Author> opt_author = authorRepository.findByEmail(dto.getEmail());
+        boolean check = true;
+        if (!opt_author.isPresent()){
+            check = false;
+        }else {
+            if (!passwordEncoder.matches(dto.getPassword(),opt_author.get().getPassword())){
+                check = false;
+            }
+        }
+
+        if(!check){
+            throw new IllegalArgumentException("email/pw is wrong");
+        }
+        return opt_author.get();
+
     }
 
 
