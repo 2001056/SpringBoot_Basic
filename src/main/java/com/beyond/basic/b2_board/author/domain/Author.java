@@ -43,8 +43,8 @@ public class Author extends BaseTimeEntity {
     @Builder.Default
     private List<Post> postList = new ArrayList<>();
 
-    @OneToOne(mappedBy = "author", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    private Address address;
+//    @OneToOne(mappedBy = "author", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+//    private Address address;
 
     public void updatePassword(String password){
         this.password = password;

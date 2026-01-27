@@ -12,6 +12,8 @@ import com.beyond.basic.b2_board.post.domain.Post;
 import com.beyond.basic.b2_board.post.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -110,7 +112,14 @@ public class AuthorService {
 //        AuthorDetailDto dto = AuthorDetailDto.fromEntity(author,0);
         AuthorDetailDto dto = AuthorDetailDto.fromEntity(author);
         return dto;
-
+    }
+    @Transactional(readOnly = true)
+    public AuthorDetailDto myinfo(){
+        String email = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+        Optional<Author> optAuthor = authorRepository.findByEmail(email);
+        Author author = optAuthor.orElseThrow(()-> new EntityNotFoundException("entity is not found"));
+        AuthorDetailDto dto = AuthorDetailDto.fromEntity(author);
+        return dto;
     }
     @Transactional(readOnly = true)
     public List<AuthorListDto> findAll(){

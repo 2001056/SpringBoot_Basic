@@ -6,10 +6,15 @@ import com.beyond.basic.b2_board.author.service.AuthorService;
 import com.beyond.basic.b2_board.common.auth.JwtTokenProvider;
 import com.beyond.basic.b2_board.common.dtos.CommonErrorDto;
 import com.beyond.basic.b2_board.dtos.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,23 +38,24 @@ public class AuthorController {
     @PostMapping("/create")
 //    dto에 있는 validation어노테이션과 @Valid가 한쌍
     public ResponseEntity<?> create(@RequestBody @Valid AuthorCreateDto dto) {
-//        아래 예외처리는 exceptionhandler에서 전역적으로 예외처리
-//        try {
-//            authorService.save(dto);
-//            return ResponseEntity
-//                    .status(HttpStatus.CREATED)
-//                    .body("OK");
-//        } catch (IllegalArgumentException e) {
-//            CommonErrorDto commonErrorDto = CommonErrorDto.builder()
-//                    .status_code(400)
-//                    .error_message(e.getMessage())
-//                    .build();
-//            e.printStackTrace();
-//            return ResponseEntity
-//                    .status(HttpStatus.BAD_REQUEST)
-//                    .body(commonErrorDto);
-//        }
-
+        /**
+        아래 예외처리는 exceptionhandler에서 전역적으로 예외처리
+        try {
+            authorService.save(dto);
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body("OK");
+        } catch (IllegalArgumentException e) {
+            CommonErrorDto commonErrorDto = CommonErrorDto.builder()
+                    .status_code(400)
+                    .error_message(e.getMessage())
+                    .build();
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(commonErrorDto);
+        }
+        **/
         authorService.save(dto);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -57,6 +63,9 @@ public class AuthorController {
     }
 
     @GetMapping("/list")
+//    PreAuthorize : Authentication객체 안의 권한정보를 확인하는 어노테이션
+//    2개이상의 Role을 허용하는경우 : "hasRole('ADMIN') or hasRole('SELLER')"
+    @PreAuthorize("hasRole('ADMIN')")
     public List<AuthorListDto> findAll() {
         List<AuthorListDto> dtoList = authorService.findAll();
         return dtoList;
@@ -79,6 +88,7 @@ public class AuthorController {
 //        }
 //    }
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> findById(@PathVariable Long id) {
         try {
             AuthorDetailDto dto = authorService.findById(id);
@@ -95,6 +105,14 @@ public class AuthorController {
                     .status(HttpStatus.NOT_FOUND)
                     .body(dto);
         }
+    }
+    @GetMapping("/myinfo")
+    public ResponseEntity<?> myinfo() {
+            AuthorDetailDto dto = authorService.myinfo();
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(dto);
+
     }
 
     @DeleteMapping("/{id}")

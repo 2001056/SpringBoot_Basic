@@ -6,8 +6,6 @@
 server:
   port: 8081
 spring:
-  profiles:
-    active:
 #  아래는 jdbc의 기본 db연결 설정. jdbc뿐만아니라, mybatis,jpa등 spring의 대부분의 db관리기술에서 사용.
 #  스키마는 사전 생성 필요, 테이블의 경우 jdbc/mybatis는 사전생성 필요.
   datasource:

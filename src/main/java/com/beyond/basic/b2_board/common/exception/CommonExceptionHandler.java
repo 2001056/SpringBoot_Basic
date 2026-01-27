@@ -4,6 +4,7 @@ package com.beyond.basic.b2_board.common.exception;
 import com.beyond.basic.b2_board.common.dtos.CommonErrorDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -45,7 +46,6 @@ public class CommonExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> exception(Exception e){
-        System.out.println("heeer3");
         e.printStackTrace();
         CommonErrorDto dto = CommonErrorDto.builder()
                 .status_code(500)
@@ -53,7 +53,15 @@ public class CommonExceptionHandler {
                 .build();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(dto);
     }
-
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<?> authorizationDeniedException(AuthorizationDeniedException e){
+        e.printStackTrace();
+        CommonErrorDto dto = CommonErrorDto.builder()
+                .status_code(403)
+                .error_message(e.getMessage())
+                .build();
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(dto);
+    }
 
 
 }
